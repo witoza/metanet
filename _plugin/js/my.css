@@ -3,19 +3,39 @@
     width: auto;
     height: auto;
     overflow: hidden;
-    border: 1px solid #73AD21;
+    border: 1px solid black;
+    border-radius: 3px;
     z-index: 10000;
 }
 
 .meta_all_rooms {
-    top: 10px;
-    left: 10px;
-    background-color: aliceblue;
+    top: 5px;
+    left: 5px;
+    background-color: cornsilk;
     opacity: 0.9;
+    padding: 4px;
 }
 
 .meta_room {
-    top: 10px;
-    left: 10px;
-    background-color: azure;
+    background-color: cornsilk;
+    opacity: 0.9;
+    width: 640px;
+    height: auto;
+    padding: 3px;
+}
+
+.my_clearfix:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+.my_clearfix {
+    display: inline-block;
+}
+
+.my_clearfix {
+    display: block;
 }
