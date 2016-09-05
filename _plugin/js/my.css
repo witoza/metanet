@@ -1,10 +1,21 @@
-.meta_m {
-    position: fixed;
+.my_draggable {
+    position: fixed !important;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    border: 1px solid #73AD21;
+    z-index: 10000;
+}
+
+.meta_all_rooms {
     top: 10px;
-    right: 10px;
-    width: 300px;
-    border: 3px solid #73AD21;
+    left: 10px;
     background-color: aliceblue;
     opacity: 0.9;
-    z-index: 10000;
+}
+
+.meta_room {
+    top: 10px;
+    left: 10px;
+    background-color: azure;
 }

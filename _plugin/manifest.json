@@ -24,12 +24,14 @@
     {
       "all_frames": true,
       "js": [
-        "lib/jquery.min-1.7.2.js",
+        "lib/jquery-1.12.4.js",
         "lib/jquery.ajaxq-0.0.1.js",
+        "lib/jquery-ui.js",
         "js/main.js"
       ],
 	  "css":[
-		 "js/my.css"
+		 "js/my.css",
+          "js/jquery-ui.css"
 	  ],
 	 
       "matches": [

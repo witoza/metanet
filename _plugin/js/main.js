@@ -34,42 +34,69 @@ $(document).ready(function () {
     let h_rooms = "";
     for (const key in rooms) {
         let room = rooms[key];
-        h_rooms += "<div id='" +room.m_uuid+"'>"+key+"</div>"
+        h_rooms += "<li><a id='" + room.m_uuid + "' href='javascript:void(0)'>" + key + "</a></li>"
     }
 
+    const all_rooms = $(`
+<div class="meta_all_rooms my_draggable">
+    <div >
+        <div class="my_resizable">
+            <div>
+               <b>Meta:</b><a href="javascript:void(0)" id="show_rooms"> Show rooms</a>
+            </div>
+             <div id="rooms">
+                <ul>` + h_rooms + `</ul>
+            </div>
+        </div>
+    </div>
+</div>`);
 
-    var show_rooms = $(`
-<div class="meta_m">
-    <div id="show_rooms">
-        Rooms
+    for (const key in rooms) {
+        const room = rooms[key];
+        all_rooms.find("#" + room.m_uuid).click(function () {
+            console.log("X", room);
+
+            const the_room = $(`
+<div class="meta_room my_draggable">
+    <div>
+        <div class="my_resizable">
+            <h1>Room: witoza</h1>
+            
+            <form action="demo_form.asp">
+              First name: <input type="text" name="fname"><br>
+              Last name: <input type="text" name="lname"><br>
+              <input type="submit" value="Submit">
+            </form>
+        </div>
     </div>
-    
-     <div id="rooms">
-`
-        + h_rooms +
-`
-    </div>
-    
-</div>
-  `);
+</div>`);
+
+            $("body").prepend(the_room);
+
+            $('.my_draggable').draggable();
+            $('.my_resizable').resizable();
+
+        });
+    }
 
     let hide_rooms = true;
-    show_rooms.find("#rooms").hide();
+    all_rooms.find("#rooms").hide();
 
-    show_rooms.find("#show_rooms").click(function () {
-        console.log("show rooms")
+    all_rooms.find("#show_rooms").click(function () {
+        console.log("show rooms");
 
         if (hide_rooms) {
-            show_rooms.find("#rooms").show();
+            all_rooms.find("#rooms").show();
         } else {
-            show_rooms.find("#rooms").hide();
+            all_rooms.find("#rooms").hide();
         }
         hide_rooms = !hide_rooms;
 
     });
 
-    $("body").append(show_rooms);
-
+    $("body").prepend(all_rooms);
+    $('.my_draggable').draggable();
+    $('.my_resizable').resizable();
 
 });
 
