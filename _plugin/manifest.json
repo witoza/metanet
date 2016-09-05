@@ -1,0 +1,41 @@
+{
+  "manifest_version": 2,
+  "name": "metanet",
+  "version": "0.0.1",
+  "description": "metanet",
+  "web_accessible_resources": [
+    "ajax_loading_small.gif",
+    "options.html"
+  ],
+  "background": {
+    "scripts": [
+      "js/options.js",
+      "background.js"
+    ]
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "http://*/*"
+  ],
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": [
+        "lib/jquery.min-1.7.2.js",
+        "lib/jquery.ajaxq-0.0.1.js",
+        "js/main.js"
+      ],
+	  "css":[
+		 "js/my.css"
+	  ],
+	 
+      "matches": [
+        "http://*/*",
+		"https://*/*"
+      ]
+    }
+  ]
+}
