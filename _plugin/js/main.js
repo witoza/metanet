@@ -34,18 +34,18 @@ myOPT.load();
 function augment(url_data) {
     let rooms = url_data.rooms;
 
+    function room_to_str(room) {
+        return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</li>";
+    }
+
     let html_public_rooms = rooms
         .filter(room => room.owner != myOPT.opts.User.uuid)
-        .map(function (room) {
-            return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a></li>";
-        })
+        .map(room_to_str)
         .join("");
 
     let html_my_rooms = rooms
         .filter(room => room.owner === myOPT.opts.User.uuid)
-        .map(function (room) {
-            return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a></li>";
-        })
+        .map(room_to_str)
         .join("");
 
     const all_rooms = $(`
@@ -65,16 +65,76 @@ function augment(url_data) {
     </div>
 </div>`);
 
+    let new_room_index = 0;
     all_rooms.find("#create_room").click(function () {
         console.log("new room");
+        new_room_index++;
+        if (new_room_index > 5) {
+            new_room_index = 0;
+        }
+
+        const room = {
+            uuid: guid(),
+            runtime: {
+                top: 150 + (30) * new_room_index,
+                left: 150 + (30) * new_room_index,
+            }
+        };
+
+        const the_room = $(`
+<div class="meta_room my_draggable" id="room_${room.uuid}">
+    <div>
+        <div class="mt_title" style="padding: 2px; font-family: monospace; color: black">
+            <strong>Create new room</strong>
+            <span style="float:right">
+                <strong>
+                    <span id="close">
+                        <a href="javascript:void(0)" id="close">x</a>&nbsp;
+                    </span> 
+                </strong>
+            </span>
+        </div>
+        <div class="my_clearfix"></div>
+        <p></p>
+        <p>Name: <input type="text" name="name" size="20"></p>
+        <p>Matching URL: <input type="text" name="matching_url" size="60"></p>
+        <p>User karma limit: <input type="text" name="karma_limit" size="5"></p>
+            
+        <input type="button" value="Create" id="create">
+    </div>
+</div>`);
+
+        the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
+        $("body").prepend(the_room);
+
+        the_room.find("#create").click(function () {
+            console.log("create room");
+        });
+        the_room.find("#close").click(function () {
+            close_room(room);
+        });
+        the_room.draggable({
+            stop: function (event, ui) {
+                room.runtime.top = $(this).offset().top;
+                room.runtime.left = $(this).offset().left;
+            }
+        });
+        the_room.resizable();
+
+        the_room.click(function () {
+            set_room_focus(room);
+        });
+        set_room_focus(room);
+
+        room.runtime.elem = the_room;
     });
 
-    function set_room_focus(active_room) {
-        update_room_content(active_room);
+    function set_room_focus(room) {
+        update_room_content(room);
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
 
-            if ($item.attr("id") === "room_" + active_room.uuid) {
+            if ($item.attr("id") === "room_" + room.uuid) {
                 $item.css({"opacity": "1", "z-index": 10000});
                 $item.find(".mt_title").css({"background-color": "#ff6600"});
             } else {
@@ -83,6 +143,13 @@ function augment(url_data) {
                 $item.find(".mt_title").css({"background-color": "lightgray"});
             }
         });
+    }
+
+    function close_room(room) {
+        console.log("close_room", room.name);
+        room.runtime.elem.remove();
+        delete room.runtime.elem;
+        delete room.runtime.visible;
     }
 
     function update_room_content(room) {
@@ -126,37 +193,31 @@ function augment(url_data) {
     for (const room of rooms) {
         index++;
 
+        const is_owner = room.owner === myOPT.opts.User.uuid;
+
         const _index = index;
         all_rooms.find("#" + room.uuid).click(function () {
 
-            console.log("toggle_room", room.name);
+                console.log("toggle_room", room.name);
 
-            function close_room() {
-                console.log("close_room", room.name);
-                room.runtime.elem.remove();
-                delete room.runtime.elem;
-                delete room.runtime.visible;
-            }
-
-            if (room.runtime === undefined) {
-                room.runtime = {
-                    top: 150 + (30) * _index,
-                    left: 150 + (30) * _index,
+                if (room.runtime === undefined) {
+                    room.runtime = {
+                        top: 150 + (30) * _index,
+                        left: 150 + (30) * _index,
+                    }
                 }
-            }
 
-            if (room.runtime.visible) {
-                close_room();
-                return;
-            }
-            room.runtime.visible = true;
+                if (room.runtime.visible) {
+                    close_room(room);
+                    return;
+                }
+                room.runtime.visible = true;
 
-            const the_room = $(`
-<div class="meta_room my_draggable" id="room_` + room.uuid + `">
+                const the_room = $(`
+<div class="meta_room my_draggable" id="room_${room.uuid}">
     <div>
-    
         <div class="mt_title" style="padding: 2px; font-family: monospace; color: black">
-            <strong>` + room.name + " (owner " + room.owner + `)</strong>
+            <strong>${room.name}</strong>
             <span style="float:right">
                 <strong>
                     <span id="info">
@@ -164,64 +225,63 @@ function augment(url_data) {
                     </span>
                     |
                     <span id="close">
-                        <a href="javascript:void(0)" id="close">x&nbsp;</a>
+                        <a href="javascript:void(0)" id="close">x</a>&nbsp;
                     </span> 
                 </strong>
             </span>
         </div>
         <div class="my_clearfix"></div>
-        Matching URL: <b>` + room.url + `</b><br/>
+        Matching URL: <b>${room.url}</b><br/>
         Chat:
         <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
         Say what:
         <input type="text" style="width: 100%;" id="saywhat"></input>
-        
-        <input type="submit" value="Send" id="send">
+        <input type="button" value="Send" id="send">
     </div>
 </div>`);
+                the_room.click(function () {
+                    set_room_focus(room);
+                });
+                the_room.find("#close").click(function () {
+                    close_room(room);
+                });
+                the_room.find("#info").click(function () {
+                    console.log("info");
+                });
+                the_room.find("#send").click(function () {
+                    console.log("send");
+                    const what = the_room.find("#saywhat").val();
+                    the_room.find("#saywhat").val("");
+                    if (what == "") {
+                        return;
+                    }
 
-            the_room.click(function () {
+                    const item = {
+                        user: myOPT.opts.User.uuid,
+                        msg: what
+                    };
+
+                    post(room, item);
+                });
+
+                the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
+
+                $("body").prepend(the_room);
+
+                the_room.draggable({
+                    stop: function (event, ui) {
+                        room.runtime.top = $(this).offset().top;
+                        room.runtime.left = $(this).offset().left;
+                    }
+                });
+                the_room.resizable();
+
+                room.runtime.elem = the_room;
+
                 set_room_focus(room);
-            });
 
-            the_room.find("#close").click(close_room);
-            the_room.find("#info").click(function () {
-                console.log("info");
-            });
-
-            the_room.find("#send").click(function () {
-                console.log("send");
-                const what = the_room.find("#saywhat").val();
-                the_room.find("#saywhat").val("");
-                if (what == "") {
-                    return;
-                }
-
-                const item = {
-                    user: myOPT.opts.User.uuid,
-                    msg: what
-                };
-
-                post(room, item);
-            });
-
-            the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
-
-            $("body").prepend(the_room);
-
-            the_room.draggable({
-                stop: function (event, ui) {
-                    room.runtime.top = $(this).offset().top;
-                    room.runtime.left = $(this).offset().left;
-                }
-            });
-            the_room.resizable();
-
-            room.runtime.elem = the_room;
-
-            set_room_focus(room);
-
-        });
+            }
+        );
     }
 
     let hide_rooms = true;

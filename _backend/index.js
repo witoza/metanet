@@ -98,18 +98,24 @@ STORAGE.rooms.push(
         url: "https://streambin.pl/*",
         name: 'Default',
         owner: U_1.uuid,
+        up_v: 35,
+        down_v: 3,
     },
     {
         uuid: "room-uuid-2",
         url: "https://streambin.pl/*",
         name: 'my_fun',
         owner: U_2.uuid,
+        up_v: 24,
+        down_v: 3,
     },
     {
         uuid: "room-uuid-3",
         url: "https://streambin.pl/*",
         name: 'plotki',
         owner: U_3.uuid,
+        up_v: 98,
+        down_v: 4,
     }
 );
 
@@ -118,7 +124,7 @@ STORAGE.room_content["room-uuid-1"] = {
         {
             time: Date.now(),
             user: U_1.uuid,
-            msg: "hello there"
+            msg: "hello there",
         },
         {
             time: Date.now(),
