@@ -44,16 +44,24 @@ $(document).ready(function () {
         h_rooms += "<li><a id='" + room.m_uuid + "' href='javascript:void(0)'>" + key + "</a></li>"
     }
 
+    var href = chrome.extension.getURL("options.html");
+
     const all_rooms = $(`
 <div class="meta_all_rooms my_draggable">
-   <b>Meta</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
+   <b>Meta (` + Object.keys(rooms).length + `)</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
     <div id="rooms">
+        <a target="_blank" href="` + href + `" target="_blank">Configure</a>
+        <br/>
+            
         Public rooms:
         <ul>` + h_rooms + `</ul>
         My Rooms:
+        
+        <br/>
         <b><a href="javascript:void(0)" id="create_room">Create room</a></b>
     </div>
 </div>`);
+
 
     all_rooms.find("#create_room").click(function () {
 
@@ -62,14 +70,36 @@ $(document).ready(function () {
 
     const opened_rooms = {};
 
+    var active_room = null;
+
+    var set_room_focus = function () {
+        $(".meta_room").each(function (index, item) {
+            var $item = $(item);
+            if ($item.attr("id") === "room_" + active_room.m_uuid) {
+                $item.css({"opacity": "0.97", "z-index": 10000});
+                console.log($item, "active");
+                $item.find(".mt_title").css({"background-color": "#f1a899"});
+
+            } else {
+                console.log($item, "not active");
+                $item.css({"opacity": "0.9", "z-index": 9999});
+                $item.find(".mt_title").css({"background-color": "lightgray"});
+            }
+        });
+    };
+
+    let index = 0;
     for (const key in rooms) {
+        index++;
+
+        let ind = index;
         const room = rooms[key];
         all_rooms.find("#" + room.m_uuid).click(function () {
 
             if (opened_rooms[room.m_uuid] === undefined) {
                 opened_rooms[room.m_uuid] = {
-                    top: 200,
-                    left: 200,
+                    top: 150 + (30) * ind,
+                    left: 150 + (30) * ind,
                     content: ""
                 }
             }
@@ -84,10 +114,10 @@ $(document).ready(function () {
             R.visible = true;
 
             const the_room = $(`
-<div class="meta_room my_draggable">
+<div class="meta_room my_draggable" id="room_` + room.m_uuid + `">
         <div class="my_resizable">
         
-            <div style="background-color: #f1a899; padding: 2px">
+            <div class="mt_title" style="padding: 2px">
                 <strong>` + key + " (owner " + room.owner.username + `)</strong>
                 <strong style="float:right"><a href="javascript:void(0)" id="close">x</a>&nbsp;</strong>
             </div>
@@ -103,6 +133,8 @@ $(document).ready(function () {
 
             the_room.click(function () {
                 console.log(room);
+                active_room = room;
+                set_room_focus();
             });
 
             the_room.find("#close").on('click', function () {
@@ -143,6 +175,9 @@ $(document).ready(function () {
             $('.my_resizable').resizable();
 
             R.elem = the_room;
+
+            active_room = room;
+            set_room_focus();
 
         });
     }

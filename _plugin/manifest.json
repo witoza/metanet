@@ -29,14 +29,13 @@
         "lib/jquery-ui.js",
         "js/main.js"
       ],
-	  "css":[
-		 "js/my.css",
-          "js/jquery-ui.css"
-	  ],
-	 
+      "css": [
+        "js/my.css",
+        "js/jquery-ui.css"
+      ],
       "matches": [
         "http://*/*",
-		"https://*/*"
+        "https://*/*"
       ]
     }
   ]
