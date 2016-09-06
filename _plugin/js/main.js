@@ -108,21 +108,21 @@ function augment(url_data) {
 
             const the_room = $(`
 <div class="meta_room my_draggable" id="room_` + room.uuid + `">
-        <div class="my_resizable">
-        
-            <div class="mt_title" style="padding: 2px">
-                <strong>` + room.name + " (owner " + room.owner + `)</strong>
-                <strong style="float:right"><a href="javascript:void(0)" id="close">x</a>&nbsp;</strong>
-            </div>
-            <div class="my_clearfix"></div>
-            Matching URL: <b>` + room.url + `</b><br/>
-            Chat:
-            <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
-            Say what:
-            <input type="text" style="width: 100%; " id="saywhat"></input>
-            
-            <input type="submit" value="Send" id="send">
+    <div>
+    
+        <div class="mt_title" style="padding: 2px">
+            <strong>` + room.name + " (owner " + room.owner + `)</strong>
+            <strong style="float:right"><a href="javascript:void(0)" id="close">x</a>&nbsp;</strong>
         </div>
+        <div class="my_clearfix"></div>
+        Matching URL: <b>` + room.url + `</b><br/>
+        Chat:
+        <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
+        Say what:
+        <input type="text" style="width: 100%; " id="saywhat"></input>
+        
+        <input type="submit" value="Send" id="send">
+    </div>
 </div>`);
 
             the_room.click(function () {
@@ -173,7 +173,7 @@ function augment(url_data) {
                     R.left = $(this).offset().left;
                 }
             });
-            $('.my_resizable').resizable();
+            the_room.resizable();
 
             R.elem = the_room;
 
