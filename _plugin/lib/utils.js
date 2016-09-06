@@ -33,7 +33,7 @@ class Options {
     static getDefault() {
         return {
             User: {
-                uuid: guid(),
+                uuid: "user-uuid-1",
                 username: "anonymous",
             }
         }

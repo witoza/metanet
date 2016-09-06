@@ -34,23 +34,31 @@ myOPT.load();
 function augment(url_data) {
     let rooms = url_data.rooms;
 
-    let html_rooms = "";
-    for (const room of rooms) {
-        html_rooms += "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a></li>"
-    }
+    let html_public_rooms = rooms
+        .filter(room => room.owner != myOPT.opts.User.uuid)
+        .map(function (room) {
+            return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a></li>";
+        })
+        .join("");
 
-    var href = chrome.extension.getURL("options.html");
+    let html_my_rooms = rooms
+        .filter(room => room.owner === myOPT.opts.User.uuid)
+        .map(function (room) {
+            return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a></li>";
+        })
+        .join("");
 
     const all_rooms = $(`
 <div class="meta_all_rooms my_draggable">
-   <b>Meta (` + Object.keys(rooms).length + `)</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
+   <b>MetaNet (` + Object.keys(rooms).length + `)</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
     <div id="rooms">
-        <a target="_blank" href="` + href + `" target="_blank">Configure</a>
+        <a target="_blank" href="` + chrome.extension.getURL("options.html") + `" target="_blank">Configure</a>
         <br/>
             
         Public rooms:
-        <ul>` + html_rooms + `</ul>
+        <ul>${html_public_rooms}</ul>
         My Rooms:
+        <ul>${html_my_rooms}</ul>
         
         <br/>
         <b><a href="javascript:void(0)" id="create_room">Create room</a></b>
@@ -61,7 +69,7 @@ function augment(url_data) {
         console.log("new room");
     });
 
-    var set_room_focus = function (active_room) {
+    function set_room_focus(active_room) {
         update_room_content(active_room);
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
@@ -75,9 +83,7 @@ function augment(url_data) {
                 $item.find(".mt_title").css({"background-color": "lightgray"});
             }
         });
-    };
-
-    let index = 0;
+    }
 
     function update_room_content(room) {
 
@@ -97,8 +103,7 @@ function augment(url_data) {
             }
 
             var hi = content.map(function (item) {
-                var d = new Date(item.time);
-                return "<p style='margin:2px; font-family: monospace;'>" + format_date(d) + " | <b>" + item.user + "</b> | " + item.msg + "</p>";
+                return "<p style='margin:2px; font-family: monospace;'>" + format_date(new Date(item.time)) + " | <b>" + item.user + "</b> | " + item.msg + "</p>";
             });
             room.runtime.elem.find("#mcontent").html(hi.reverse().join(""));
         }
@@ -114,11 +119,11 @@ function augment(url_data) {
     }
 
     setInterval(function () {
-        for (const room of rooms) {
-            update_room_content(room);
-        }
+        rooms.forEach(update_room_content);
     }, 5000);
 
+
+    let index = 0;
     for (const room of rooms) {
         index++;
 

@@ -78,17 +78,17 @@ var STORAGE = {
 };
 
 const U_1 = {
-    uuid: uuid.v4(),
+    uuid: "user-uuid-1",
     username: "Witold Z",
 };
 
 const U_2 = {
-    uuid: uuid.v4(),
+    uuid: "user-uuid-2",
     username: "witold z",
 };
 
 const U_3 = {
-    uuid: uuid.v4(),
+    uuid: "user-uuid-3",
     username: "witoza",
 };
 
