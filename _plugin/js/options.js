@@ -48,7 +48,7 @@ function buildHtml() {
     console.log("buildHtml");
 
     var theBody = $("#body");
-    var opts = Options.prototype.getDefault();
+    var opts = Options.getDefault();
     for (var categoryName in opts) {
         theBody.append("<div id='" + categoryName + "'></div>");
 

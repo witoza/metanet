@@ -1,11 +1,13 @@
 "use strict";
 
+const SERVER_URL = "http://127.0.0.1:7001";
+
 function get_rooms() {
     return new Promise(function (resolve, reject) {
         callAjax("rbt", {
             method: "POST",
-            url: "http://127.0.0.1:7001/get_url_data",
-            data: {
+            url: SERVER_URL + "/get_url_data",
+                data: {
                 url: window.location.href
             },
             failure: function (err) {
@@ -21,7 +23,7 @@ function get_rooms() {
 function post(room, item) {
     callAjax("rbt", {
         method: "POST",
-        url: "http://127.0.0.1:7001/post",
+        url: SERVER_URL + "/post",
         data: {
             room_uuid: room.uuid,
             item: item
@@ -67,10 +69,10 @@ function augment(url_data) {
     var set_room_focus = function (active_room) {
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
+
             if ($item.attr("id") === "room_" + active_room.uuid) {
                 $item.css({"opacity": "0.97", "z-index": 10000});
                 $item.find(".mt_title").css({"background-color": "#f1a899"});
-
             } else {
                 const zi = parseInt($item.css("z-index"));
                 $item.css({"opacity": "0.9", "z-index": zi - 1});
