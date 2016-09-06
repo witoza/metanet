@@ -75,8 +75,8 @@ function augment(url_data) {
             var $item = $(item);
 
             if ($item.attr("id") === "room_" + active_room.uuid) {
-                $item.css({"opacity": "0.97", "z-index": 10000});
-                $item.find(".mt_title").css({"background-color": "#f1a899"});
+                $item.css({"opacity": "1", "z-index": 10000});
+                $item.find(".mt_title").css({"background-color": "#ff6600"});
             } else {
                 const zi = parseInt($item.css("z-index"));
                 $item.css({"opacity": "0.9", "z-index": zi - 1});
@@ -122,7 +122,6 @@ function augment(url_data) {
         rooms.forEach(update_room_content);
     }, 5000);
 
-
     let index = 0;
     for (const room of rooms) {
         index++;
@@ -156,9 +155,19 @@ function augment(url_data) {
 <div class="meta_room my_draggable" id="room_` + room.uuid + `">
     <div>
     
-        <div class="mt_title" style="padding: 2px">
+        <div class="mt_title" style="padding: 2px; font-family: monospace; color: black">
             <strong>` + room.name + " (owner " + room.owner + `)</strong>
-            <strong style="float:right"><a href="javascript:void(0)" id="close">x</a>&nbsp;</strong>
+            <span style="float:right">
+                <strong>
+                    <span id="info">
+                       <a href="javascript:void(0)">info</a>
+                    </span>
+                    |
+                    <span id="close">
+                        <a href="javascript:void(0)" id="close">x&nbsp;</a>
+                    </span> 
+                </strong>
+            </span>
         </div>
         <div class="my_clearfix"></div>
         Matching URL: <b>` + room.url + `</b><br/>
@@ -176,6 +185,9 @@ function augment(url_data) {
             });
 
             the_room.find("#close").click(close_room);
+            the_room.find("#info").click(function () {
+                console.log("info");
+            });
 
             the_room.find("#send").click(function () {
                 console.log("send");
@@ -220,8 +232,20 @@ function augment(url_data) {
 
         if (hide_rooms) {
             all_rooms.find("#rooms").show();
+
+            rooms.forEach(function (room) {
+                if (room.runtime && room.runtime.visible) {
+                    room.runtime.elem.show();
+                }
+            });
         } else {
             all_rooms.find("#rooms").hide();
+
+            rooms.forEach(function (room) {
+                if (room.runtime && room.runtime.visible) {
+                    room.runtime.elem.hide();
+                }
+            });
         }
         hide_rooms = !hide_rooms;
 
