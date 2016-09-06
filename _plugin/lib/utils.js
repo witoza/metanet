@@ -19,15 +19,6 @@ class Options {
         });
     }
 
-    static getDefault() {
-        return {
-            User: {
-                uuid: guid(),
-                username: "anonymous",
-            }
-        }
-    }
-
     reset() {
         this.opts = Options.getDefault();
         this.save();
@@ -39,20 +30,35 @@ class Options {
         });
     }
 
+    static getDefault() {
+        return {
+            User: {
+                uuid: guid(),
+                username: "anonymous",
+            }
+        }
+    }
+
 }
 
 function callAjax(qname, callOpts) {
-    if (callOpts.beforeSend) callOpts.beforeSend();
+    if (callOpts.beforeSend) {
+        callOpts.beforeSend();
+    }
     chrome.runtime.sendMessage({
         method: callOpts.method,
         action: 'xhttp',
         url: callOpts.url,
         data: JSON.stringify(callOpts.data)
-    }, function (responseText) {
-        if (responseText == null || responseText.length == 0) {
-            callOpts.failure(responseText);
+    }, function (response) {
+        if (response == null || response.length == 0) {
+            if (callOpts.failure) {
+                callOpts.failure(response);
+            }
         } else {
-            callOpts.success(responseText);
+            if (callOpts.success) {
+                callOpts.success(response);
+            }
         }
     });
 }
@@ -66,4 +72,4 @@ function guid() {
 
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
         s4() + '-' + s4() + s4() + s4();
-};
+}

@@ -18,6 +18,17 @@ function get_rooms() {
     });
 }
 
+function post(room, item) {
+    callAjax("rbt", {
+        method: "POST",
+        url: "http://127.0.0.1:7001/post",
+        data: {
+            room_uuid: room.uuid,
+            item: item
+        }
+    });
+}
+
 const myOPT = new Options();
 myOPT.load();
 
@@ -61,7 +72,8 @@ function augment(url_data) {
                 $item.find(".mt_title").css({"background-color": "#f1a899"});
 
             } else {
-                $item.css({"opacity": "0.9", "z-index": 9999});
+                const zi = parseInt($item.css("z-index"));
+                $item.css({"opacity": "0.9", "z-index": zi - 1});
                 $item.find(".mt_title").css({"background-color": "lightgray"});
             }
         });
@@ -101,6 +113,7 @@ function augment(url_data) {
                 <strong style="float:right"><a href="javascript:void(0)" id="close">x</a>&nbsp;</strong>
             </div>
             <div class="my_clearfix"></div>
+            Matching URL: <b>` + room.url + `</b><br/>
             Chat:
             <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
             Say what:
@@ -123,16 +136,19 @@ function augment(url_data) {
             the_room.find("#send").on('click', function () {
                 console.log("send");
                 const what = the_room.find("#saywhat").val();
+                the_room.find("#saywhat").val("");
                 if (what == "") {
                     return;
                 }
 
-                room.content.push({
+                const item = {
                     user: myOPT.opts.User.uuid,
                     msg: what
-                });
+                };
 
-                the_room.find("#saywhat").val("");
+                post(room, item);
+                room.content.push(item);
+
                 update_content();
             });
 

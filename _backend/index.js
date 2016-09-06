@@ -139,8 +139,26 @@ app.post('/get_url_data', function (req, res, next) {
 
     const R = {};
     R.rooms = STORAGE.rooms;
+    for (const room of R.rooms) {
+        for (const item of room.content) {
+        }
+    }
 
     res.json(R);
+});
+
+app.post('/post', function (req, res, next) {
+
+    var body = req.body;
+
+    const room_uuid = body.room_uuid;
+
+    const room = STORAGE.rooms.find(room => room.uuid == room_uuid);
+    if (room) {
+        room.content.push(body.item);
+    }
+    
+    res.end();
 });
 
 app.post('/get_user_data', function (req, res, next) {
