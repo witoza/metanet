@@ -7,7 +7,7 @@ function get_rooms() {
         callAjax("rbt", {
             method: "POST",
             url: SERVER_URL + "/get_url_data",
-                data: {
+            data: {
                 url: window.location.href
             },
             failure: function (err) {
@@ -64,8 +64,6 @@ function augment(url_data) {
         console.log("new room");
     });
 
-    const opened_rooms = {};
-
     var set_room_focus = function (active_room) {
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
@@ -83,28 +81,43 @@ function augment(url_data) {
 
     let index = 0;
 
+    setInterval(function () {
+        for (const room of rooms) {
+            const check = room.runtime && room.runtime.visible;
+            if (!check) {
+                continue;
+            }
+            console.log("get data for room", room.name);
+        }
+    }, 4000);
+
     for (const room of rooms) {
         index++;
 
-        let ind = index;
+        const _index = index;
         all_rooms.find("#" + room.uuid).click(function () {
 
-            if (opened_rooms[room.uuid] === undefined) {
-                opened_rooms[room.uuid] = {
-                    top: 150 + (30) * ind,
-                    left: 150 + (30) * ind,
-                    content: ""
+            console.log("toggle_room", room.name);
+
+            function close_room() {
+                console.log("close_room", room.name);
+                room.runtime.elem.remove();
+                delete room.runtime.elem;
+                delete room.runtime.visible;
+            }
+
+            if (room.runtime === undefined) {
+                room.runtime = {
+                    top: 150 + (30) * _index,
+                    left: 150 + (30) * _index,
                 }
             }
 
-            const R = opened_rooms[room.uuid];
-            if (R.visible) {
-                R.elem.remove();
-                delete R.elem;
-                R.visible = false;
+            if (room.runtime.visible) {
+                close_room();
                 return;
             }
-            R.visible = true;
+            room.runtime.visible = true;
 
             const the_room = $(`
 <div class="meta_room my_draggable" id="room_` + room.uuid + `">
@@ -119,7 +132,7 @@ function augment(url_data) {
         Chat:
         <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
         Say what:
-        <input type="text" style="width: 100%; " id="saywhat"></input>
+        <input type="text" style="width: 100%;" id="saywhat"></input>
         
         <input type="submit" value="Send" id="send">
     </div>
@@ -129,13 +142,9 @@ function augment(url_data) {
                 set_room_focus(room);
             });
 
-            the_room.find("#close").on('click', function () {
-                R.elem.remove();
-                delete R.elem;
-                R.visible = false;
-            });
+            the_room.find("#close").click(close_room);
 
-            the_room.find("#send").on('click', function () {
+            the_room.find("#send").click(function () {
                 console.log("send");
                 const what = the_room.find("#saywhat").val();
                 the_room.find("#saywhat").val("");
@@ -149,8 +158,6 @@ function augment(url_data) {
                 };
 
                 post(room, item);
-                room.content.push(item);
-
                 update_content();
             });
 
@@ -163,19 +170,19 @@ function augment(url_data) {
 
             update_content();
 
-            the_room.css({top: R.top, left: R.left, position: 'fixed'});
+            the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
 
             $("body").prepend(the_room);
 
             the_room.draggable({
                 stop: function (event, ui) {
-                    R.top = $(this).offset().top;
-                    R.left = $(this).offset().left;
+                    room.runtime.top = $(this).offset().top;
+                    room.runtime.left = $(this).offset().left;
                 }
             });
             the_room.resizable();
 
-            R.elem = the_room;
+            room.runtime.elem = the_room;
 
             set_room_focus(room);
 
