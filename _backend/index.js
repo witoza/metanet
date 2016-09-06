@@ -72,101 +72,112 @@ app.use('/', function (req, res, next) {
 });
 
 var STORAGE = {
-    users: {
-        data: []
-    },
-    rooms: []
+    users: [],
+    rooms: [],
+    room_content: {}
 };
 
-const u1 = {
+const U_1 = {
     uuid: uuid.v4(),
     username: "Witold Z",
 };
 
-const u2 = {
+const U_2 = {
     uuid: uuid.v4(),
     username: "witold z",
 };
 
-const u3 = {
+const U_3 = {
     uuid: uuid.v4(),
     username: "witoza",
 };
 
-
 STORAGE.rooms.push(
     {
-        uuid: uuid.v4(),
+        uuid: "room-uuid-1",
         url: "https://streambin.pl/*",
         name: 'Default',
-        owner: u1.uuid,
-        content: [
-            {
-                user: u1.uuid,
-                msg: "hello there"
-            },
-            {
-                user: u2.uuid,
-                msg: "hi sir"
-            },
-            {
-                user: u3.uuid,
-                msg: "im steave!"
-            }
-        ]
+        owner: U_1.uuid,
     },
     {
-        uuid: uuid.v4(),
+        uuid: "room-uuid-2",
         url: "https://streambin.pl/*",
         name: 'my_fun',
-        owner: u2.uuid,
-        content: []
+        owner: U_2.uuid,
     },
     {
-        uuid: uuid.v4(),
+        uuid: "room-uuid-3",
         url: "https://streambin.pl/*",
         name: 'plotki',
-        owner: u3.uuid,
-        content: []
+        owner: U_3.uuid,
     }
 );
 
-STORAGE.users.data.push(u1, u2, u3);
+STORAGE.room_content["room-uuid-1"] = {
+    data: [
+        {
+            time: Date.now(),
+            user: U_1.uuid,
+            msg: "hello there"
+        },
+        {
+            time: Date.now(),
+            user: U_2.uuid,
+            msg: "hi sir"
+        },
+        {
+            time: Date.now(),
+            user: U_3.uuid,
+            msg: "im steave!"
+        }
+    ]
+};
+
+STORAGE.room_content["room-uuid-2"] = {
+    data: []
+};
+
+STORAGE.users.push(U_1, U_2, U_3);
 
 app.post('/get_url_data', function (req, res, next) {
 
     const url = req.require_param("url");
-
-    const R = {};
-    R.rooms = STORAGE.rooms;
-    for (const room of R.rooms) {
-        for (const item of room.content) {
-        }
+    const R = {
+        rooms: []
+    };
+    for (const room of STORAGE.rooms) {
+        R.rooms.push(room);
     }
-
     res.json(R);
+});
+
+app.post('/get_room_content', function (req, res, next) {
+    const room_uuid = req.require_param("room_uuid");
+    var rc = STORAGE.room_content[room_uuid];
+    if (!rc) {
+        STORAGE.room_content[room_uuid] = {
+            data: []
+        };
+        rc = STORAGE.room_content[room_uuid];
+    }
+    res.json(rc.data);
 });
 
 app.post('/post', function (req, res, next) {
+    const body = req.body;
+    const roomc = STORAGE.room_content[body.room_uuid];
 
-    var body = req.body;
+    const item = Object.assign({time: Date.now()}, body.item);
 
-    const room_uuid = body.room_uuid;
-
-    const room = STORAGE.rooms.find(room => room.uuid == room_uuid);
-    if (room) {
-        room.content.push(body.item);
+    if (roomc) {
+        roomc.data.push(item);
+    } else {
+        STORAGE.room_content[body.room_uuid] = {
+            data: [item]
+        }
     }
-    
-    res.end();
-});
 
-app.post('/get_user_data', function (req, res, next) {
-
-    const m_uuid = req.require_param("m_uuid");
-
-    const R = {};
-    res.json(R);
+    res.json({});
 });
 
 const http_port = 7001;

@@ -1,29 +1,26 @@
 "use strict";
 
-const SERVER_URL = "http://127.0.0.1:7001";
-
 function get_rooms() {
-    return new Promise(function (resolve, reject) {
-        callAjax("rbt", {
-            method: "POST",
-            url: SERVER_URL + "/get_url_data",
-            data: {
-                url: window.location.href
-            },
-            failure: function (err) {
-                reject(err);
-            },
-            success: function (data) {
-                resolve(JSON.parse(data));
-            }
-        });
+    return callAjaxPromise("rbt", {
+        url: "/get_url_data",
+        data: {
+            url: window.location.href
+        }
+    });
+}
+
+function get_room_content(room) {
+    return callAjaxPromise("rbt", {
+        url: "/get_room_content",
+        data: {
+            room_uuid: room.uuid
+        },
     });
 }
 
 function post(room, item) {
-    callAjax("rbt", {
-        method: "POST",
-        url: SERVER_URL + "/post",
+    return callAjaxPromise("rbt", {
+        url: "/post",
         data: {
             room_uuid: room.uuid,
             item: item
@@ -65,6 +62,7 @@ function augment(url_data) {
     });
 
     var set_room_focus = function (active_room) {
+        update_room_content(active_room);
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
 
@@ -81,15 +79,45 @@ function augment(url_data) {
 
     let index = 0;
 
+    function update_room_content(room) {
+
+        function update_content(content) {
+
+            function format_date(d) {
+                var s = d.getHours() + ":";
+                if (d.getMinutes() < 9) {
+                    s += "0"
+                }
+                s += d.getMinutes() + ":";
+                if (d.getSeconds() < 9) {
+                    s += "0"
+                }
+                s += d.getSeconds();
+                return s;
+            }
+
+            var hi = content.map(function (item) {
+                var d = new Date(item.time);
+                return "<p style='margin:2px; font-family: monospace;'>" + format_date(d) + " | <b>" + item.user + "</b> | " + item.msg + "</p>";
+            });
+            room.runtime.elem.find("#mcontent").html(hi.reverse().join(""));
+        }
+
+        const check = room.runtime && room.runtime.visible;
+        if (!check) {
+            return;
+        }
+        console.log("checking for room", room.name, "content");
+        get_room_content(room).then(function (content) {
+            update_content(content);
+        });
+    }
+
     setInterval(function () {
         for (const room of rooms) {
-            const check = room.runtime && room.runtime.visible;
-            if (!check) {
-                continue;
-            }
-            console.log("get data for room", room.name);
+            update_room_content(room);
         }
-    }, 4000);
+    }, 5000);
 
     for (const room of rooms) {
         index++;
@@ -158,17 +186,7 @@ function augment(url_data) {
                 };
 
                 post(room, item);
-                update_content();
             });
-
-            function update_content() {
-                var hi = room.content.map(function (item) {
-                    return "<p style='margin:2px;'><b>" + item.user + "</b>: " + item.msg + "</p>";
-                });
-                the_room.find("#mcontent").html(hi.join(""));
-            }
-
-            update_content();
 
             the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
 

@@ -41,6 +41,26 @@ class Options {
 
 }
 
+const SERVER_URL = "http://127.0.0.1:7001";
+
+function callAjaxPromise(qname, callOpts) {
+    return new Promise(function (resolve, reject) {
+        callAjax(qname, {
+
+            method: callOpts.method || "POST",
+            url: SERVER_URL + callOpts.url,
+            data: callOpts.data,
+
+            failure: function (err) {
+                reject(err);
+            },
+            success: function (data) {
+                resolve(JSON.parse(data));
+            }
+        });
+    });
+}
+
 function callAjax(qname, callOpts) {
     if (callOpts.beforeSend) {
         callOpts.beforeSend();
