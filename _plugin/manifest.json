@@ -27,6 +27,7 @@
         "lib/jquery-1.12.4.js",
         "lib/jquery.ajaxq-0.0.1.js",
         "lib/jquery-ui.js",
+        "lib/utils.js",
         "js/main.js"
       ],
       "css": [

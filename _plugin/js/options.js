@@ -19,7 +19,7 @@ Options.prototype.load = function (callback) {
 Options.prototype.getDefault = function () {
     return {
         General: {
-            User_UUID: "-1",
+            User_UUID: guid(),
         }
     };
 };
