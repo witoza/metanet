@@ -1,23 +1,5 @@
 "use strict";
 
-var storage = chrome.storage.local;
-
-function callAjax(qname, callOpts) {
-    if (callOpts.beforeSend) callOpts.beforeSend();
-    chrome.runtime.sendMessage({
-        method: callOpts.method,
-        action: 'xhttp',
-        url: callOpts.url,
-        data: JSON.stringify(callOpts.data)
-    }, function (responseText) {
-        if (responseText == null || responseText.length == 0) {
-            callOpts.failure(responseText);
-        } else {
-            callOpts.success(responseText);
-        }
-    });
-}
-
 function get_rooms() {
     return new Promise(function (resolve, reject) {
         callAjax("rbt", {
@@ -36,10 +18,8 @@ function get_rooms() {
     });
 }
 
-const user = {
-    uuid: guid(),
-    username: "witold"
-};
+const myOPT = new Options();
+myOPT.load();
 
 function augment(url_data) {
     let rooms = url_data.rooms;
@@ -73,9 +53,7 @@ function augment(url_data) {
 
     const opened_rooms = {};
 
-    var active_room = null;
-
-    var set_room_focus = function () {
+    var set_room_focus = function (active_room) {
         $(".meta_room").each(function (index, item) {
             var $item = $(item);
             if ($item.attr("id") === "room_" + active_room.uuid) {
@@ -133,9 +111,7 @@ function augment(url_data) {
 </div>`);
 
             the_room.click(function () {
-                console.log(room);
-                active_room = room;
-                set_room_focus();
+                set_room_focus(room);
             });
 
             the_room.find("#close").on('click', function () {
@@ -152,7 +128,7 @@ function augment(url_data) {
                 }
 
                 room.content.push({
-                    user: user.username,
+                    user: myOPT.opts.User.uuid,
                     msg: what
                 });
 
@@ -161,11 +137,10 @@ function augment(url_data) {
             });
 
             function update_content() {
-                var c = "";
-                for (const item of room.content) {
-                    c += "<p style='margin:2px;'><b>" + item.user + "</b>: " + item.msg + "</p>";
-                }
-                the_room.find("#mcontent").html(c);
+                var hi = room.content.map(function (item) {
+                    return "<p style='margin:2px;'><b>" + item.user + "</b>: " + item.msg + "</p>";
+                });
+                the_room.find("#mcontent").html(hi.join(""));
             }
 
             update_content();
@@ -184,8 +159,7 @@ function augment(url_data) {
 
             R.elem = the_room;
 
-            active_room = room;
-            set_room_focus();
+            set_room_focus(room);
 
         });
     }
