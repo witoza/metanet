@@ -151,14 +151,21 @@ function augment(url_data) {
                     return;
                 }
 
-                R.content = "<p style='margin:2px;'><b>" + user.username + "</b>: " + what + "</p>" + R.content;
+                room.content.push({
+                    user: user.username,
+                    msg: what
+                });
 
                 the_room.find("#saywhat").val("");
                 update_content();
             });
 
             function update_content() {
-                the_room.find("#mcontent").html(R.content);
+                var c = "";
+                for (const item of room.content) {
+                    c += "<p style='margin:2px;'><b>" + item.user + "</b>: " + item.msg + "</p>";
+                }
+                the_room.find("#mcontent").html(c);
             }
 
             update_content();

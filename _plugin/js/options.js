@@ -18,8 +18,9 @@ Options.prototype.load = function (callback) {
 
 Options.prototype.getDefault = function () {
     return {
-        General: {
-            User_UUID: guid(),
+        User: {
+            uuid: guid(),
+            username: "anonymous",
         }
     };
 };
@@ -98,7 +99,7 @@ function buildHtml() {
             if (typeOfNode === "boolean") {
                 htmlStr = htmlStr + ("<input name='" + fieldName + "' type='checkbox'>" + humanReadable + "</input>");
             } else if (typeOfNode === "string") {
-                htmlStr = htmlStr + (humanReadable + " <input name='" + fieldName + "' type='text' size='60'/>");
+                htmlStr = htmlStr + (humanReadable + " <input name='" + fieldName + "' type='text' size='40'/>");
             }
             htmlStr = htmlStr + ("<br/>");
         }
