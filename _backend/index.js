@@ -115,7 +115,7 @@ STORAGE.rooms.push(
         name: 'default',
         owner: U_1.uuid,
         up_v: 35,
-        down_v: 3,
+        down_v: -3,
         karma_limit: 1,
         created: Date.now(),
     },
@@ -125,7 +125,7 @@ STORAGE.rooms.push(
         name: 'my_fun',
         owner: U_2.uuid,
         up_v: 24,
-        down_v: 3,
+        down_v: -3,
         karma_limit: 1,
         created: Date.now(),
     },
@@ -135,7 +135,7 @@ STORAGE.rooms.push(
         name: 'plotki',
         owner: U_3.uuid,
         up_v: 98,
-        down_v: 4,
+        down_v: -4,
         karma_limit: 1,
         created: Date.now(),
     }
@@ -191,10 +191,24 @@ app.post('/get_room_content', function (req, res, next) {
     res.json(rc.data);
 });
 
-app.post('/create_room', function (req, res, next) {
-    var room = req.body.room;
+app.post('/vote_room', function (req, res, next) {
+    const room_uuid = req.require_param("room_uuid");
+    const value = req.require_param("value");
+    const room = STORAGE.rooms.find(room => room.uuid == room_uuid);
+    if (room) {
+        if (value > 0) {
+            room.up_v++;
+        } else {
+            room.down_v--;
+        }
+    }
+    res.json(room);
+});
 
-    var item = {
+app.post('/create_room', function (req, res, next) {
+    const room = req.body.room;
+
+    const new_room = {
         uuid: room.uuid,
         url: room.matching_url,
         name: room.name.toLowerCase(),
@@ -205,9 +219,9 @@ app.post('/create_room', function (req, res, next) {
         created: Date.now(),
     };
 
-    STORAGE.rooms.push(item);
+    STORAGE.rooms.push(new_room);
 
-    res.json({});
+    res.json(new_room);
 });
 
 app.post('/delete_room', function (req, res, next) {

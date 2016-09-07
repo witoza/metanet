@@ -9,6 +9,16 @@ function get_rooms() {
     });
 }
 
+function vote_room(room, value) {
+    return callAjaxPromise("rbt", {
+        url: "/vote_room",
+        data: {
+            room_uuid: room.uuid,
+            value: value
+        }
+    });
+}
+
 function create_room(room) {
     return callAjaxPromise("rbt", {
         url: "/create_room",
@@ -47,11 +57,30 @@ function augment(url_data) {
     let rooms = url_data.rooms;
 
     function room_to_str(room) {
+        let name = room.name;
         if (room.owner === user.uuid) {
-            return "<p style='margin:0px'>&nbsp;&nbsp;&nbsp;<a id='" + room.uuid + "' href='javascript:void(0)'>#<b>" + room.name + "</b></a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</p>";
+            name = `#<b>${name}</b>`;
         }
-        return "<p style='margin:0px'>&nbsp;&nbsp;&nbsp;<a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</p>";
+        console.log("room2str", room);
+        return `
+<p style='margin:0px' id="${room.uuid}">&nbsp;&nbsp; 
+    <a href='javascript:void(0)'>
+        <span name="name">${name}</span>
+    </a>
+    &#8593;
+    <span name="up_v" style="color: green">${room.up_v}</span>
+    &#8595;
+    <span name="down_v" style="color: red">${room.down_v}</span>
+</p> `;
     }
+
+    rooms.sort(function (r1, r2) {
+        function ranking(r) {
+            return r.up_v + r.down_v;
+        }
+
+        return ranking(r1) < ranking(r2);
+    });
 
     let html_owners_rooms = rooms
         .filter(room => room.name === 'default')
@@ -284,6 +313,19 @@ function augment(url_data) {
         </span>
     </div>
 </div>`);
+
+                function update_room_meta(room) {
+                    $("#" + room.uuid + " > span[name='up_v']").html(room.up_v);
+                    $("#" + room.uuid + " > span[name='down_v']").html(room.down_v);
+                    $("#" + room.uuid + " > span[name='name']").html(room.name);
+                }
+
+                the_room.find("#up_vote").click(function () {
+                    vote_room(room, 1).then(update_room_meta);
+                });
+                the_room.find("#down_vote").click(function () {
+                    vote_room(room, -1).then(update_room_meta);
+                });
                 the_room.click(function () {
                     set_room_focus(room);
                 });
