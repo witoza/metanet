@@ -40,38 +40,41 @@ function post(room, item) {
 const myOPT = new Options();
 myOPT.load();
 
+var html_divs = $("<div></div>");
+
 function augment(url_data) {
     const user = myOPT.opts.User;
     let rooms = url_data.rooms;
 
     function room_to_str(room) {
-        return "<li><a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</li>";
+        if (room.owner === user.uuid) {
+            return "<p style='margin:0px'>&nbsp;&nbsp;&nbsp;<a id='" + room.uuid + "' href='javascript:void(0)'>#<b>" + room.name + "</b></a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</p>";
+        }
+        return "<p style='margin:0px'>&nbsp;&nbsp;&nbsp;<a id='" + room.uuid + "' href='javascript:void(0)'>" + room.name + "</a>&nbsp;&#8593;" + room.up_v + "&nbsp;&#8595;" + room.down_v + "</p>";
     }
 
-    let html_public_rooms = rooms
-        .filter(room => room.owner != user.uuid)
+    let html_owners_rooms = rooms
+        .filter(room => room.name === 'default')
         .map(room_to_str)
         .join("");
 
-    let html_my_rooms = rooms
-        .filter(room => room.owner === user.uuid)
+    let html_public_rooms = rooms
+        .filter(room => room.name != 'default')
         .map(room_to_str)
         .join("");
 
     const all_rooms = $(`
 <div class="meta_all_rooms my_draggable">
     <b>MetaNet (` + Object.keys(rooms).length + `)</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
+    
     <div id="rooms">
-        <a target="_blank" href="` + chrome.extension.getURL("options.html") + `" target="_blank">Configure</a>
+        <b>Rooms:</b>
+         ${html_owners_rooms} 
+        <b>Public:</b>
+         ${html_public_rooms} 
         <br/>
-            
-        Public rooms:
-        <ul>${html_public_rooms}</ul>
-        My Rooms:
-        <ul>${html_my_rooms}</ul>
-        
-        <br/>
-        <b><a href="javascript:void(0)" id="create_room">Create room</a></b>
+        <p style='margin:0px'><b><a href="javascript:void(0)" id="create_room"> create room</a></b></p>
+        <p style='margin:0px'><b><a target="_blank" href="` + chrome.extension.getURL("options.html") + `" target="_blank"> configure MetaNet</a></b></p>
     </div>
 </div>`);
 
@@ -107,15 +110,15 @@ function augment(url_data) {
         </div>
         <div class="my_clearfix"></div>
         <p></p>
-        <p>Name: <input type="text" name="name" size="20"></p>
-        <p>Matching URL: <input type="text" name="matching_url" size="60"></p>
-        <p>User karma limit: <input type="number" name="karma_limit"></p>
+        <p>Name: <input type="text" name="name" size="20" value="my_room"></p>
+        <p>Matching URL: <input type="text" name="matching_url" size="60" value="${window.location.href}"></p>
+        <p>Minimum user's karma required to join: <input type="number" name="karma_limit" value="1"></p>
             
         <input type="button" value="Create" id="create">
     </div>
 </div>`);
 
-        $("body").prepend(the_room);
+        html_divs.prepend(the_room);
         the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
         the_room.find("#create").click(function () {
             console.log("create room");
@@ -125,7 +128,7 @@ function augment(url_data) {
             create_room(room).then(function () {
                 console.log("room has been created");
                 close_room(room);
-                //TODO:
+                reload();
             })
 
         });
@@ -267,9 +270,19 @@ function augment(url_data) {
     Matching URL: <b>${room.url}</b><br/>
     Chat:
     <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
-    Say what:
-    <input type="text" style="width: 100%;" id="saywhat"></input>
-    <input type="button" value="Send" id="send">
+    
+    <div>
+        Say what:
+        <input type="text" style="width: 100%;" id="saywhat"></input>
+        <span style="float:left">
+            <input type="button" value="Send" id="send">
+        </span>
+        
+        <span style="float:right">
+            <input type="button" value=" &#8593; " id="up_vote" style="background-color: green; color: white;"> 
+            <input type="button" value=" &#8595; " id="down_vote" style="background-color: red; color: white;"> 
+        </span>
+    </div>
 </div>`);
                 the_room.click(function () {
                     set_room_focus(room);
@@ -298,7 +311,7 @@ function augment(url_data) {
 
                 the_room.css({top: room.runtime.top, left: room.runtime.left, position: 'fixed'});
 
-                $("body").prepend(the_room);
+                html_divs.prepend(the_room);
 
                 the_room.draggable({
                     stop: function (event, ui) {
@@ -343,14 +356,22 @@ function augment(url_data) {
 
     });
 
-    $("body").prepend(all_rooms);
+    html_divs.append(all_rooms);
     all_rooms.draggable();
 }
 
-$(document).ready(function () {
-    console.log("hello from metanet");
+$("body").prepend(html_divs);
+
+function reload() {
+
+    html_divs.empty();
     get_rooms().then(function (url_data) {
         console.log("url_data", url_data);
         augment(url_data);
     });
+}
+
+$(document).ready(function () {
+    console.log("hello from metanet");
+    reload();
 });

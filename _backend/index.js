@@ -112,7 +112,7 @@ STORAGE.rooms.push(
     {
         uuid: "room-uuid-1",
         url: "https://streambin.pl/*",
-        name: 'Default',
+        name: 'default',
         owner: U_1.uuid,
         up_v: 35,
         down_v: 3,
@@ -197,7 +197,7 @@ app.post('/create_room', function (req, res, next) {
     var item = {
         uuid: room.uuid,
         url: room.matching_url,
-        name: room.name,
+        name: room.name.toLowerCase(),
         owner: room.owner,
         up_v: 0,
         down_v: 0,
