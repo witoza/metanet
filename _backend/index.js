@@ -11,6 +11,22 @@ const uuid = require('uuid');
 
 const logger = log4js.getLogger();
 
+Array.prototype.remove = function (predicate, beforeDelete) {
+    var total = 0;
+    for (var i = 0; i < this.length; i++) {
+        if (predicate(this[i])) {
+            if (beforeDelete != null) {
+                beforeDelete(this[i]);
+            }
+            this.splice(i, 1);
+            i--;
+            total++;
+        }
+    }
+    return total;
+};
+
+
 String.prototype.startsWithAny = function () {
     return Array.prototype.some.call(arguments, arg => this.startsWith(arg));
 };
@@ -100,6 +116,8 @@ STORAGE.rooms.push(
         owner: U_1.uuid,
         up_v: 35,
         down_v: 3,
+        karma_limit: 1,
+        created: Date.now(),
     },
     {
         uuid: "room-uuid-2",
@@ -108,6 +126,8 @@ STORAGE.rooms.push(
         owner: U_2.uuid,
         up_v: 24,
         down_v: 3,
+        karma_limit: 1,
+        created: Date.now(),
     },
     {
         uuid: "room-uuid-3",
@@ -116,6 +136,8 @@ STORAGE.rooms.push(
         owner: U_3.uuid,
         up_v: 98,
         down_v: 4,
+        karma_limit: 1,
+        created: Date.now(),
     }
 );
 
@@ -167,6 +189,33 @@ app.post('/get_room_content', function (req, res, next) {
         rc = STORAGE.room_content[room_uuid];
     }
     res.json(rc.data);
+});
+
+app.post('/create_room', function (req, res, next) {
+    var room = req.body.room;
+
+    var item = {
+        uuid: room.uuid,
+        url: room.matching_url,
+        name: room.name,
+        owner: room.owner,
+        up_v: 0,
+        down_v: 0,
+        karma_limit: room.karma_limit,
+        created: Date.now(),
+    };
+
+    STORAGE.rooms.push(item);
+
+    res.json({});
+});
+
+app.post('/delete_room', function (req, res, next) {
+    const room_uuid = req.require_param("room_uuid");
+    delete STORAGE.room_content[room_uuid];
+    STORAGE.rooms.remove(room => room.uuid = room_uuid);
+
+    res.json({});
 });
 
 app.post('/post', function (req, res, next) {

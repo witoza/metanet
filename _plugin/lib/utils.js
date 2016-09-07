@@ -45,10 +45,12 @@ const SERVER_URL = "http://127.0.0.1:7001";
 
 function callAjaxPromise(qname, callOpts) {
     return new Promise(function (resolve, reject) {
+        let url = SERVER_URL + callOpts.url;
+        console.info("calling", url, "with body", callOpts.data);
         callAjax(qname, {
 
             method: callOpts.method || "POST",
-            url: SERVER_URL + callOpts.url,
+            url: url,
             data: callOpts.data,
 
             failure: function (err) {
