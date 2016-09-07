@@ -76,7 +76,12 @@ function augment(url_data) {
 
     rooms.sort(function (r1, r2) {
         function ranking(r) {
-            return r.up_v + r.down_v;
+            var v = 0;
+            if (r.owner === user.uuid) {
+                v += 10000;
+            }
+            v += r.up_v + r.down_v;
+            return v;
         }
 
         return ranking(r1) < ranking(r2);
@@ -157,7 +162,7 @@ function augment(url_data) {
             create_room(room).then(function () {
                 console.log("room has been created");
                 close_room(room);
-                reload();
+                reload(true);
             })
 
         });
@@ -400,16 +405,20 @@ function augment(url_data) {
 
     html_divs.append(all_rooms);
     all_rooms.draggable();
+    return all_rooms;
 }
 
 $("body").prepend(html_divs);
 
-function reload() {
+function reload(show) {
 
     html_divs.empty();
     get_rooms().then(function (url_data) {
         console.log("url_data", url_data);
-        augment(url_data);
+        var all_rooms = augment(url_data);
+        if (show) {
+            all_rooms.find("#show_rooms").click();
+        }
     });
 }
 

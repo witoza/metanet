@@ -209,20 +209,40 @@ app.post('/create_room', function (req, res, next) {
     const room = req.body.room;
 
     const new_room = {
-        uuid: room.uuid,
-        url: room.matching_url,
-        name: room.name.toLowerCase(),
-        owner: room.owner,
+        uuid: room.uuid.trim(),
+        url: room.matching_url.trim(),
+        name: room.name.toLowerCase().trim(),
+        owner: room.owner.trim(),
         up_v: 0,
         down_v: 0,
         karma_limit: room.karma_limit,
         created: Date.now(),
     };
 
+    if (new_room.name === "") {
+        res.json({
+            msg: "name must not be empty"
+        });
+        return;
+    }
+    if (new_room.url.length < 10) {
+        res.json({
+            msg: "invalid url"
+        });
+        return;
+    }
+    if (STORAGE.rooms.find(room => room.name === new_room.name) != null) {
+        res.json({
+            msg: "room already exists"
+        });
+        return;
+    }
+
     STORAGE.rooms.push(new_room);
 
     res.json(new_room);
-});
+})
+;
 
 app.post('/delete_room', function (req, res, next) {
     const room_uuid = req.require_param("room_uuid");
