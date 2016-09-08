@@ -145,7 +145,7 @@ function augment(url_data) {
         <div class="my_clearfix"></div>
         <p></p>
         <p>Name: <input type="text" name="name" size="20" value="my_room"></p>
-        <p>Matching URL: <input type="text" name="matching_url" size="60" value="${window.location.href}"></p>
+        <p>Matching URL: <input type="text" name="url" size="60" value="${window.location.href}"></p>
         <p>Minimum user's karma required to join: <input type="number" name="karma_limit" value="1"></p>
             
         <input type="button" value="Create" id="create">
@@ -157,12 +157,12 @@ function augment(url_data) {
         the_room.find("#create").click(function () {
             console.log("create room");
             room.name = the_room.find("[name='name']").val();
-            room.matching_url = the_room.find("[name='matching_url']").val();
+            room.url = the_room.find("[name='url']").val();
             room.karma_limit = the_room.find("[name='karma_limit']").val();
             create_room(room).then(function () {
                 console.log("room has been created");
                 close_room(room);
-                reload(true);
+                reload();
             })
 
         });
@@ -231,7 +231,7 @@ function augment(url_data) {
             }
 
             var hi = content.map(function (item) {
-                return "<p style='margin:2px; font-family: monospace;'>" + format_date(new Date(item.time)) + " | <b>" + item.user + "</b> | " + item.msg + "</p>";
+                return "<p style='margin:2px; font-family: monospace;'>[" + format_date(new Date(item.time)) + "] &lt;<b>" + item.user + "</b>&gt; " + item.msg + "</p>";
             });
             room.runtime.elem.find("#mcontent").html(hi.reverse().join(""));
         }
@@ -257,7 +257,7 @@ function augment(url_data) {
         const is_owner = room.owner === user.uuid;
 
         const _index = index;
-        all_rooms.find("#" + room.uuid).click(function () {
+        all_rooms.find("#" + room.uuid + " > a").click(function () {
 
                 console.log("toggle_room", room.name);
 
@@ -383,6 +383,8 @@ function augment(url_data) {
         console.log("show rooms");
 
         if (hide_rooms) {
+            myOPT.opts.Runtime.show_rooms = true;
+            myOPT.save();
             all_rooms.find("#rooms").show();
 
             rooms.forEach(function (room) {
@@ -391,6 +393,8 @@ function augment(url_data) {
                 }
             });
         } else {
+            myOPT.opts.Runtime.show_rooms = false;
+            myOPT.save();
             all_rooms.find("#rooms").hide();
 
             rooms.forEach(function (room) {
@@ -410,13 +414,13 @@ function augment(url_data) {
 
 $("body").prepend(html_divs);
 
-function reload(show) {
+function reload() {
 
     html_divs.empty();
     get_rooms().then(function (url_data) {
         console.log("url_data", url_data);
         var all_rooms = augment(url_data);
-        if (show) {
+        if (myOPT.opts.Runtime.show_rooms) {
             all_rooms.find("#show_rooms").click();
         }
     });

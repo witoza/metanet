@@ -35,6 +35,10 @@ class Options {
             User: {
                 uuid: "user-uuid-1",
                 username: "anonymous",
+            },
+            Runtime: {
+                show_rooms: false,
+                rooms: {}
             }
         }
     }
@@ -60,6 +64,9 @@ function callAjaxPromise(qname, callOpts) {
                 resolve(JSON.parse(data));
             }
         });
+    }).catch(function (err) {
+        console.warn("error from the server", err);
+        alert(err);
     });
 }
 
@@ -73,6 +80,7 @@ function callAjax(qname, callOpts) {
         url: callOpts.url,
         data: JSON.stringify(callOpts.data)
     }, function (response) {
+
         if (response == null || response.length == 0) {
             if (callOpts.failure) {
                 callOpts.failure(response);

@@ -87,85 +87,7 @@ app.use('/', function (req, res, next) {
     next();
 });
 
-var STORAGE = {
-    users: [],
-    rooms: [],
-    room_content: {}
-};
-
-const U_1 = {
-    uuid: "user-uuid-1",
-    username: "Witold Z",
-};
-
-const U_2 = {
-    uuid: "user-uuid-2",
-    username: "witold z",
-};
-
-const U_3 = {
-    uuid: "user-uuid-3",
-    username: "witoza",
-};
-
-STORAGE.rooms.push(
-    {
-        uuid: "room-uuid-1",
-        url: "https://streambin.pl/*",
-        name: 'default',
-        owner: U_1.uuid,
-        up_v: 35,
-        down_v: -3,
-        karma_limit: 1,
-        created: Date.now(),
-    },
-    {
-        uuid: "room-uuid-2",
-        url: "https://streambin.pl/*",
-        name: 'my_fun',
-        owner: U_2.uuid,
-        up_v: 24,
-        down_v: -3,
-        karma_limit: 1,
-        created: Date.now(),
-    },
-    {
-        uuid: "room-uuid-3",
-        url: "https://streambin.pl/*",
-        name: 'plotki',
-        owner: U_3.uuid,
-        up_v: 98,
-        down_v: -4,
-        karma_limit: 1,
-        created: Date.now(),
-    }
-);
-
-STORAGE.room_content["room-uuid-1"] = {
-    data: [
-        {
-            time: Date.now(),
-            user: U_1.uuid,
-            msg: "hello there",
-        },
-        {
-            time: Date.now(),
-            user: U_2.uuid,
-            msg: "hi sir"
-        },
-        {
-            time: Date.now(),
-            user: U_3.uuid,
-            msg: "im steave!"
-        }
-    ]
-};
-
-STORAGE.room_content["room-uuid-2"] = {
-    data: []
-};
-
-STORAGE.users.push(U_1, U_2, U_3);
+const STORAGE = require("./dummy").STORAGE;
 
 app.post('/get_url_data', function (req, res, next) {
 
@@ -174,7 +96,13 @@ app.post('/get_url_data', function (req, res, next) {
         rooms: []
     };
     for (const room of STORAGE.rooms) {
-        R.rooms.push(room);
+        logger.debug("checking via: " + room.url);
+        if (url.startsWith(room.url)) {
+            logger.debug("match!");
+            R.rooms.push(room);
+        } else {
+            logger.debug("not match");
+        }
     }
     res.json(R);
 });
@@ -210,7 +138,7 @@ app.post('/create_room', function (req, res, next) {
 
     const new_room = {
         uuid: room.uuid.trim(),
-        url: room.matching_url.trim(),
+        url: room.url.toLowerCase().trim(),
         name: room.name.toLowerCase().trim(),
         owner: room.owner.trim(),
         up_v: 0,
@@ -220,19 +148,19 @@ app.post('/create_room', function (req, res, next) {
     };
 
     if (new_room.name === "") {
-        res.json({
+        res.status(400).json({
             msg: "name must not be empty"
         });
         return;
     }
     if (new_room.url.length < 10) {
-        res.json({
+        res.status(400).json({
             msg: "invalid url"
         });
         return;
     }
     if (STORAGE.rooms.find(room => room.name === new_room.name) != null) {
-        res.json({
+        res.status(400).json({
             msg: "room already exists"
         });
         return;
