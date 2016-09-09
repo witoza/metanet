@@ -10,16 +10,19 @@ const STORAGE = {
 const U_1 = {
     uuid: "user-uuid-1",
     username: "Witold Z",
+    karma: 1,
 };
 
 const U_2 = {
     uuid: "user-uuid-2",
     username: "witold z",
+    karma: 1,
 };
 
 const U_3 = {
     uuid: "user-uuid-3",
     username: "witoza",
+    karma: 1,
 };
 
 STORAGE.rooms.push(
@@ -80,5 +83,6 @@ STORAGE.room_content["room-uuid-2"] = {
 };
 
 STORAGE.users.push(U_1, U_2, U_3);
+STORAGE.votes = [];
 
 exports.STORAGE = STORAGE;

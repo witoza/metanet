@@ -1,10 +1,12 @@
 "use strict";
 
+const WURL = window.location.href;
+
 function get_rooms() {
     return callAjaxPromise("rbt", {
         url: "/get_url_data",
         data: {
-            url: window.location.href
+            url: WURL
         }
     });
 }
@@ -23,6 +25,7 @@ function create_room(room) {
     return callAjaxPromise("rbt", {
         url: "/create_room",
         data: {
+            url: WURL,
             room: room,
         },
     });
@@ -61,7 +64,6 @@ function augment(url_data) {
         if (room.owner === user.uuid) {
             name = `#<b>${name}</b>`;
         }
-        console.log("room2str", room);
         return `
 <p style='margin:0px' id="${room.uuid}">&nbsp;&nbsp; 
     <a href='javascript:void(0)'>
@@ -87,26 +89,31 @@ function augment(url_data) {
         return ranking(r1) < ranking(r2);
     });
 
-    let html_owners_rooms = rooms
-        .filter(room => room.name === 'default')
+    let html_direct_rooms = rooms
+        .filter(room => room.url === WURL)
+        .map(room_to_str)
+        .join("");
+    if (html_direct_rooms.length > 0) {
+        html_direct_rooms = `<b>Direct:</b>${html_direct_rooms}`
+    }
+
+    let html_parents_rooms = rooms
+        .filter(room => room.url != WURL)
         .map(room_to_str)
         .join("");
 
-    let html_public_rooms = rooms
-        .filter(room => room.name != 'default')
-        .map(room_to_str)
-        .join("");
+    if (html_parents_rooms.length > 0) {
+        html_parents_rooms = `<b>Parents:</b>${html_parents_rooms}`
+    }
 
     const all_rooms = $(`
 <div class="meta_all_rooms my_draggable">
     <b>MetaNet (` + Object.keys(rooms).length + `)</b> <a href="javascript:void(0)" id="show_rooms">[show]</a>
     
     <div id="rooms">
-        <b>Rooms:</b>
-         ${html_owners_rooms} 
-        <b>Public:</b>
-         ${html_public_rooms} 
-        <br/>
+         ${html_direct_rooms}
+         ${html_parents_rooms}
+         <br/>
         <p style='margin:0px'><b><a href="javascript:void(0)" id="create_room"> create room</a></b></p>
         <p style='margin:0px'><b><a target="_blank" href="` + chrome.extension.getURL("options.html") + `" target="_blank"> configure MetaNet</a></b></p>
     </div>
@@ -145,7 +152,7 @@ function augment(url_data) {
         <div class="my_clearfix"></div>
         <p></p>
         <p>Name: <input type="text" name="name" size="20" value="my_room"></p>
-        <p>Matching URL: <input type="text" name="url" size="60" value="${window.location.href}"></p>
+        <p>Matching URL: <input type="text" name="url" size="60" value="${WURL}"></p>
         <p>Minimum user's karma required to join: <input type="number" name="karma_limit" value="1"></p>
             
         <input type="button" value="Create" id="create">
@@ -230,10 +237,12 @@ function augment(url_data) {
                 return s;
             }
 
-            var hi = content.map(function (item) {
+            const hi = content.map(function (item) {
                 return "<p style='margin:2px; font-family: monospace;'>[" + format_date(new Date(item.time)) + "] &lt;<b>" + item.user + "</b>&gt; " + item.msg + "</p>";
             });
-            room.runtime.elem.find("#mcontent").html(hi.reverse().join(""));
+            const mcontent = room.runtime.elem.find("#mcontent");
+            mcontent.html(hi.join(""));
+            mcontent.scrollTop(mcontent[0].scrollHeight);
         }
 
         const check = room.runtime && room.runtime.visible;
@@ -301,9 +310,8 @@ function augment(url_data) {
         </span>
     </div>
     <div class="my_clearfix"></div>
-    Matching URL: <b>${room.url}</b><br/>
-    Chat:
-    <div style="border: 1px solid black; width: 100%; height: 200px; overflow:auto; background-color: white;" id="mcontent"></div>
+    This room is for <b>${room.url}</b><br/>
+    <div style="border: 1px solid black; width: 100%; height: 400px; overflow:auto; background-color: white;" id="mcontent"></div>
     
     <div>
         Say what:
@@ -427,6 +435,8 @@ function reload() {
 }
 
 $(document).ready(function () {
-    console.log("hello from metanet");
-    reload();
+    if (!inIframe()) {
+        console.log("hello from metanet", WURL);
+        reload();
+    }
 });

@@ -61,12 +61,18 @@ function callAjaxPromise(qname, callOpts) {
                 reject(err);
             },
             success: function (data) {
-                resolve(JSON.parse(data));
+                const obj = JSON.parse(data);
+                if (obj.error === 1) {
+                    reject(obj);
+                } else {
+                    resolve(obj);
+                }
             }
         });
     }).catch(function (err) {
         console.warn("error from the server", err);
-        alert(err);
+        alert(err.msg);
+        return Promise.reject(err);
     });
 }
 
@@ -102,4 +108,12 @@ function guid() {
 
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
         s4() + '-' + s4() + s4() + s4();
+}
+
+function inIframe() {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
 }

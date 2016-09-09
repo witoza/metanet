@@ -17,7 +17,7 @@ function populateOptions() {
             } else if (data_type === "string") {
                 node.val(category[field]);
             } else {
-                throw new Error("unknown data type: " + data_type)
+                console.log("unknown data type: " + data_type)
             }
         }
     }
@@ -37,7 +37,7 @@ function saveOptions() {
             } else if (data_type === "string") {
                 category[field] = node.val();
             } else {
-                throw new Error("unknown data type: " + data_type)
+                console.log("unknown data type: " + data_type)
             }
         }
     }
@@ -50,6 +50,7 @@ function buildHtml() {
     var theBody = $("#body");
     var opts = Options.getDefault();
     for (var categoryName in opts) {
+        if (categoryName === "Runtime") continue;
         theBody.append("<div id='" + categoryName + "'></div>");
 
         var category = opts[categoryName];

@@ -89,21 +89,26 @@ app.use('/', function (req, res, next) {
 
 const STORAGE = require("./dummy").STORAGE;
 
+function get_rooms_for_url(url) {
+    const url_lc = url.toLowerCase();
+    return STORAGE.rooms.filter(function (room) {
+        logger.debug("checking via: " + room.url);
+        if (url_lc.startsWith(room.url)) {
+            logger.debug("match!");
+            return true;
+        } else {
+            logger.debug("not match");
+        }
+        return false;
+    });
+}
+
 app.post('/get_url_data', function (req, res, next) {
 
     const url = req.require_param("url");
     const R = {
-        rooms: []
+        rooms: get_rooms_for_url(url)
     };
-    for (const room of STORAGE.rooms) {
-        logger.debug("checking via: " + room.url);
-        if (url.startsWith(room.url)) {
-            logger.debug("match!");
-            R.rooms.push(room);
-        } else {
-            logger.debug("not match");
-        }
-    }
     res.json(R);
 });
 
@@ -134,6 +139,7 @@ app.post('/vote_room', function (req, res, next) {
 });
 
 app.post('/create_room', function (req, res, next) {
+    const url = req.require_param("url");
     const room = req.body.room;
 
     const new_room = {
@@ -149,19 +155,23 @@ app.post('/create_room', function (req, res, next) {
 
     if (new_room.name === "") {
         res.status(400).json({
+            error: 1,
             msg: "name must not be empty"
         });
         return;
     }
     if (new_room.url.length < 10) {
         res.status(400).json({
+            error: 1,
             msg: "invalid url"
         });
         return;
     }
-    if (STORAGE.rooms.find(room => room.name === new_room.name) != null) {
+
+    if (STORAGE.rooms.find(room => room.name === new_room.name && room.url === new_room.url) != null) {
         res.status(400).json({
-            msg: "room already exists"
+            error: 1,
+            msg: "such room already exists"
         });
         return;
     }
